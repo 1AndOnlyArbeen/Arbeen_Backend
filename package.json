@@ -1,0 +1,16 @@
+{
+  "name": "arbeen-backend",
+  "version": "1.0.0",
+  "description": "a backend with arbeen",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "javascript",
+    "backend",
+    "arbeen"
+  ],
+  "author": "Arbeen Shrestha",
+  "license": "ISC"
+}
