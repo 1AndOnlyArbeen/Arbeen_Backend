@@ -26,4 +26,15 @@ app.use(express.static("public")) //file, folder storage , making public asset
 
 app.use(cookieParser()) // using cookieParser
 
+
+
+//routes import 
+import {userRouter} from "./routes/user.routes.js"
+
+// route decleration 
+
+app.use("/api/v1/users",userRouter)
+
+
+
 export default app;
