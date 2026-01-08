@@ -19,6 +19,7 @@ const uploadOnCloudinary = async (localFilePath) => {
         const response = await cloudinary.uploader.upload(localFilePath, {
             resource_type: "image",
         });
+        console.log(`the respones is :${response}`);
 
         // remove local file after successful upload
         if (fs.existsSync(localFilePath)) {
