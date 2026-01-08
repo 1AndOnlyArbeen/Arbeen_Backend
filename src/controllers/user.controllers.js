@@ -19,13 +19,13 @@ const registerUser = asyncHandler(async(req,res)=>{
     return res
     */
 
-    const {email, userName, password }= req.body
+    const {email, userName, password,fullName }= req.body
     console.log(`Email : ${email}`);
 
     // validation - user might be empty , email in right way 
 
 
-    if ([email,userName,password].some((field)=>
+    if ([email,userName,password,fullName].some((field)=>
     field?.trim()==="")) {
         throw new apiError(400, "all field are required ")
         
@@ -50,26 +50,30 @@ const registerUser = asyncHandler(async(req,res)=>{
 
 
     // file are there or not ? : avatar : required and coverimage 
-    
-    const avatarLocalPath = await req.files?.avatar[0]?.path
-    console.log(avatarLocalPath);
-    const coverImageLocalPath = await req.files?.coverImage[0]?.path
-    console.log(coverImageLocalPath);
-
-    if (!avatarLocalPath) {
-        throw new apiError(400, "avatar file is required")
         
-    }
-    // coverImage is option so no need to validate .....    
-    // uploading file to cloudinary 
+        const avatarLocalPath = req.files?.avatar[0]?.path
+        console.log(avatarLocalPath);
+        const coverImageLocalPath = req.files?.coverImage[0]?.path
+        console.log(coverImageLocalPath);
+        console.log(req.files);
 
-    const avatarUrlUploading = await uploadOnCloudinary(avatarLocalPath)
-    const coverImageUrlUploading = await uploadOnCloudinary(coverImageLocalPath)
+        if (!avatarLocalPath) {
+            throw new apiError(400, "avatar file is required")
+            
+        }
+        // coverImage is option so no need to validate .....    
+        // uploading file to cloudinary 
 
-    //  avatar checking
+        const avatar = await uploadOnCloudinary(avatarLocalPath);
+        console.log(avatarLocalPath);
+        console.log("🚀 Upload avatar result:", avatar);
 
-    if (!avatarUrlUploading) {
-        throw new apiError,(400, " avatar is required ")
+        const coverImage = await uploadOnCloudinary(coverImageLocalPath)
+
+        //  avatar checking
+
+        if (!avatar) {
+            throw new apiError(400, " avatar upload failed")
     }
 
     // create user object - create entries in db
@@ -86,7 +90,7 @@ const registerUser = asyncHandler(async(req,res)=>{
     
     // remove password and refresh token  
 
-    const createdUser = await user.findById (user._id).select(
+    const createdUser = await User.findById (user._id).select(
         "-password -refreshToken"
     )
     // checking is the user is created or not 
