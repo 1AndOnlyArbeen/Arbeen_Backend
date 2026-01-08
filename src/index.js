@@ -1,24 +1,17 @@
-import dotenv from "dotenv"
-import dbConnect from "./db/index.db.js"
-import app from "./app.js"
+import dotenv from "dotenv";
+dotenv.config(); 
 
+import dbConnect from "./db/index.db.js";
+import app from "./app.js";
 
-const port = process.env.PORT||4000
-
-dotenv.config()
+const port = process.env.PORT || 4000;
 
 dbConnect()
-
-.then(()=>{
-    app.listen(port,()=>{
-        console.log(`your server is running at port no  ${port}`);
-    })
-    
-
-})
-.catch((error)=>{
-    console.log(`Db mongo connection FAILED !`,error);
-
-})
-
-
+  .then(() => {
+    app.listen(port, () => {
+      console.log(`your server is running at port no ${port}`);
+    });
+  })
+  .catch((error) => {
+    console.log("Db mongo connection FAILED!", error);
+  });
