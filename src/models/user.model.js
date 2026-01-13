@@ -1,7 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import jsonwebtoken from "jsonwebtoken";
 import bcrypt from "bcrypt";
-import { asyncHandler } from "../utils/asyncHandler";
+import { asyncHandler } from "../utils/asyncHandler.js";
 
 const userSchema = new Schema(
     {
