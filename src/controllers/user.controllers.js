@@ -120,9 +120,7 @@ const registerUser = asyncHandler(async (req, res) => {
 
     return res
         .status(201)
-        .json(
-            new apiResponses(201, createdUser, "User created Successful ")
-        );
+        .json(new apiResponses(201, createdUser, "User created Successful "));
 });
 
 const loginUser = asyncHandler(async (req, res) => {
@@ -143,9 +141,9 @@ const loginUser = asyncHandler(async (req, res) => {
     console.log(email);
 
     // checking wether the email or username are entered or not checking if we did get that data or not  ?
-    
+
     if (!(userName || email)) {
-        throw new apiError(400, "userName or Password is required ");
+        throw new apiError(400, "userName or email is required ");
     }
 
     // finding the user based on the either email or userName
@@ -171,7 +169,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     // send accesstoken and refresh token in the cookie , send the secure cookies
 
-    const loggedInUser =await User.findById(user._id).select(
+    const loggedInUser = await User.findById(user._id).select(
         "-password -refreshToken"
     );
 
@@ -180,57 +178,48 @@ const loginUser = asyncHandler(async (req, res) => {
         secured: true,
     };
 
-    // returning the responses 
-
+    // returning the responses
 
     return res
-    .status(200)
-    .cookie("accessToken", accessToken, option)
-    .cookie("refreshToken", refreshToken, option)
-    .json(
-        new apiResponses(200,
-            {
-                user:loggedInUser,accessToken,refreshToken
-            },
+        .status(200)
+        .cookie("accessToken", accessToken, option)
+        .cookie("refreshToken", refreshToken, option)
+        .json(
+            new apiResponses(
+                200,
+                {
+                    user: loggedInUser,
+                    accessToken,
+                    refreshToken,
+                },
 
-            "User loggedIn Successfully "
-            
-        )
-    )
+                "User loggedIn Successfully "
+            )
+        );
 });
 
-const logoutUser = asyncHandler(async(req,res)=>{
+const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(
         req.user._id,
         {
-            $set:
-            {
-                refreshToken:undefined
-
-            }
+            $set: {
+                refreshToken: undefined,
+            },
         },
 
         {
-            new: true 
-        },
-
-        
-
-
-    )
+            new: true,
+        }
+    );
     const option = {
-            httpOnly:true,
-            secure: true
-
-    }
+        httpOnly: true,
+        secure: true,
+    };
     return res
-    .status(200)
-    .clearCookie("accessToken",option)
-    .clearCookie("refreshToken",option)
-    .json(new apiResponses(200,{},"user Loggedout successfully "))   
+        .status(200)
+        .clearCookie("accessToken", option)
+        .clearCookie("refreshToken", option)
+        .json(new apiResponses(200, {}, "user Loggedout successfully "));
+});
 
-
-})
-
-
-export { registerUser, loginUser,logoutUser };
+export { registerUser, loginUser, logoutUser };
