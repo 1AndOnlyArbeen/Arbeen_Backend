@@ -3,7 +3,8 @@ import { apiError } from "../utils/apiError.js";
 import { User } from "../models/user.model.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { apiResponses } from "../utils/apiResponse.js";
-import jsonwebtoken from "jsonwebtoken"
+import jsonwebtoken from "jsonwebtoken";
+import { response } from "express";
 
 const generateAccessTokenAndRefreshToken = async (userId) => {
     try {
@@ -139,7 +140,7 @@ const loginUser = asyncHandler(async (req, res) => {
     // request.body => request the data from the body
 
     const { email, userName, password } = req.body;
-    console.log({email},{userName});
+    console.log({ email }, { userName });
 
     // checking wether the email or username are entered or not checking if we did get that data or not  ?
 
@@ -223,51 +224,94 @@ const logoutUser = asyncHandler(async (req, res) => {
         .json(new apiResponses(200, {}, "user Loggedout successfully "));
 });
 
-const refreshAccessToken = asyncHandler(async(req,res)=>{
-
-    const incomingRefreshToken = req.cookies.refreshToken
-    if(!incomingRefreshToken){
-        throw new apiError(401,"unauthorized request ")
-
+const refreshAccessToken = asyncHandler(async (req, res) => {
+    const incomingRefreshToken = req.cookies.refreshToken;
+    if (!incomingRefreshToken) {
+        throw new apiError(401, "unauthorized request ");
     }
     const decodedAccessToken = jsonwebtoken.verify(
         incomingRefreshToken,
         process.env.REFRESH_TOKEN_SECRET
+    );
 
-    )
-
-    const user = await User.findById(decodedAccessToken?._id)
-    if(!user){
-        throw new error(401, "invalid refresh token")
-
+    const user = await User.findById(decodedAccessToken?._id);
+    if (!user) {
+        throw new error(401, "invalid refresh token");
     }
 
     if (incomingRefreshToken !== user?.refreshToken) {
-        throw new apiError(401, "refresh token is expired or used ")
-        
+        throw new apiError(401, "refresh token is expired or used ");
     }
 
     const option = {
-        httpOnly:true,
-        secure: true, 
+        httpOnly: true,
+        secure: true,
+    };
+    const { accessToken, newRefreshToken } =
+        await generateAccessTokenAndRefreshToken(user._id);
+
+    return res
+        .status(200)
+        .cookie("access", accessToken, option)
+        .cookie("refresh", newRefreshToken, option)
+        .json(
+            new apiResponses(
+                200,
+                { accessToken, refreshToken: newRefreshToken },
+                "access token refreshed successfully "
+            )
+        );
+});
+
+const changeCurrentUserPassword = asyncHandler(async (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+    const user = await User.findById(req.user._id);
+    const isPasswordCorrect = await user.isPasswordCorrect(oldPassword);
+    if (!isPasswordCorrect) {
+        throw new apiError(400, "inalid password");
     }
-    const {accessToken,newRefreshToken}=await generateAccessTokenAndRefreshToken(user._id)
+    user.password = newPassword
+    await user.save({validateBeforeSave:false})
 
     return res
     .status(200)
-    .cookie("access",accessToken,option)
-    .cookie("refresh",newRefreshToken,option)
-    .json(
-        new apiResponses(200,
-            {accessToken, refreshToken:newRefreshToken},
-            "access token refreshed successfully "
-        )
-    )
+    .json(new apiResponses(200, {}, "password changed succesfully"))
 
+
+});
+
+const getCurrentUser = asyncHandler(async(req, res)=>{
+    return res
+    .status(200)
+    .json(200, req.user,"current user fetched succesfully")
 
 })
 
+const updateAccountDetails = asyncHandler(async(req,res)=>{
+    const {fullName, email}= req.body
+    if(!fullName || !email){
+        throw new apiError(400, "all field are required ")
+    }
+    const user = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set:{
+                fullName,
+                email,
+            }
+
+        },
+        {new:true}
+    ).select("-password")
+    return res
+    .status(200)
+    .json( new apiResponses(200, user, "account details updated succesfully "))
+
+})
+
+// upload the file
 
 
 
-export { registerUser, loginUser, logoutUser,refreshAccessToken };
+
+export { registerUser, loginUser, logoutUser,changeCurrentUserPassword, refreshAccessToken,getCurrentUser,updateAccountDetails };
