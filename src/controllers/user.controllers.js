@@ -270,48 +270,130 @@ const changeCurrentUserPassword = asyncHandler(async (req, res) => {
     if (!isPasswordCorrect) {
         throw new apiError(400, "inalid password");
     }
-    user.password = newPassword
-    await user.save({validateBeforeSave:false})
+    user.password = newPassword;
+    await user.save({ validateBeforeSave: false });
 
     return res
-    .status(200)
-    .json(new apiResponses(200, {}, "password changed succesfully"))
-
-
+        .status(200)
+        .json(new apiResponses(200, {}, "password changed succesfully"));
 });
 
-const getCurrentUser = asyncHandler(async(req, res)=>{
+const getCurrentUser = asyncHandler(async (req, res) => {
     return res
-    .status(200)
-    .json(200, req.user,"current user fetched succesfully")
+        .status(200)
+        .json(200, req.user, "current user fetched succesfully");
+});
 
-})
-
-const updateAccountDetails = asyncHandler(async(req,res)=>{
-    const {fullName, email}= req.body
-    if(!fullName || !email){
-        throw new apiError(400, "all field are required ")
+const updateAccountDetails = asyncHandler(async (req, res) => {
+    const { fullName, email } = req.body;
+    if (!fullName || !email) {
+        throw new apiError(400, "all field are required ");
     }
     const user = await User.findByIdAndUpdate(
         req.user?._id,
         {
-            $set:{
+            $set: {
                 fullName,
                 email,
-            }
-
+            },
         },
-        {new:true}
-    ).select("-password")
+        { new: true }
+    ).select("-password");
     return res
-    .status(200)
-    .json( new apiResponses(200, user, "account details updated succesfully "))
+        .status(200)
+        .json(
+            new apiResponses(200, user, "account details updated succesfully ")
+        );
+});
 
-})
+// upload the avatar
 
-// upload the file
+const updateUserAvatar = asyncHandler(async (req, res) => {
+    const avatarLocalPath = req.file.path;
 
+    if (!avatarLocalPath) {
+        throw new apiError(404, "Avatar file is missing ");
+    }
 
+    const avatar = await uploadOnCloudinary(avatarLocalPath);
 
+    if (!avatar.url) {
+        throw new apiError(400, "Error while uploading avatar");
+    }
 
-export { registerUser, loginUser, logoutUser,changeCurrentUserPassword, refreshAccessToken,getCurrentUser,updateAccountDetails };
+    const updateAvatar = await User.findByIdAndUpdate(
+        req.user?._id,
+
+        {
+            $set: {
+                avatar: avatar.url,
+            },
+        },
+
+        { new: true }
+    ).select("-password");
+    return res
+        .status(200)
+        .json(
+            new apiResponses(
+                200,
+                updateAvatar,
+                "avatar image upload succesfully "
+            )
+        );
+});
+
+// coverImage uploading
+
+{
+    /* imagelcoal path ? 
+    check error , 
+    uplod in cloudinary, 
+    check error , 
+     */
+}
+
+const updateCoverImage = asyncHandler(async (req, res) => {
+    const coverImageLocalPath = req.file.path;
+    if (!coverImageLocalPath) {
+        throw new apiError(400, "CoverImage is Missing");
+    }
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+    if (!coverImage.url) {
+        throw new apiError(
+            400,
+            " Error while uploading coverimage on cloudinary "
+        );
+    }
+    const updateCoverImage = await User.findByIdAndUpdate(
+        req.user?._id,
+        {
+            $set: {
+                coverImage: coverImage.url,
+            },
+        },
+        {
+            new: true,
+        }
+    ).select("-password");
+    return res
+        .status(200)
+        .json(
+            new apiResponses(
+                200,
+                updateCoverImage,
+                "coverImage uploaded Succesfully"
+            )
+        );
+});
+
+export {
+    registerUser,
+    loginUser,
+    logoutUser,
+    changeCurrentUserPassword,
+    refreshAccessToken,
+    getCurrentUser,
+    updateAccountDetails,
+    updateUserAvatar,
+};

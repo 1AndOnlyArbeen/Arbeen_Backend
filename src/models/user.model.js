@@ -20,18 +20,33 @@ const userSchema = new Schema(
             lowercase: true,
             trim: true,
         },
-        fullName: { 
-            type: String, 
-            required: true, 
+        fullName: {
+            type: String,
+            required: true,
             trim: true,
-             index: true 
-            },
+            index: true,
+        },
 
-        avatar: { type: String, required: true },
-        coverImage: { type: String },
-        watchHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: "Video" }],
-        password: { type: String, required: [true, "password is required"] },
-        refreshToken: { type: String },
+        avatar: {
+            type: String,
+            required: true,
+        },
+        coverImage: {
+            type: String,
+        },
+        watchHistory: [
+            {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "Video",
+            },
+        ],
+        password: {
+            type: String,
+            required: [true, "password is required"],
+        },
+        refreshToken: {
+            type: String,
+        },
     },
     { timestamps: true }
 );
@@ -52,7 +67,6 @@ userSchema.methods.generateAccessToken = function () {
     return jsonwebtoken.sign(
         {
             _id: this._id,
-            
         },
         process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
@@ -67,7 +81,5 @@ userSchema.methods.generateRefreshToken = function () {
         { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
     );
 };
-
-
 
 export const User = mongoose.model("User", userSchema);
