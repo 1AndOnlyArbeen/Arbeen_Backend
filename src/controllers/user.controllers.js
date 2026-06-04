@@ -177,7 +177,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const option = {
         httpOnly: true,
-        secured: true,
+        secure: true,
     };
 
     // returning the responses
@@ -388,17 +388,6 @@ const updateCoverImage = asyncHandler(async (req, res) => {
 });
 
 
-const getUserChannelProfile = asyncHandler(async(re,res)=>{
-    const {userName} = req.params 
-    
-
-
-
-})
-
-
-
-
 
 
 
@@ -411,6 +400,5 @@ export {
     getCurrentUser,
     updateAccountDetails,
     updateUserAvatar,
-    updateCoverImage,
-    getUserChannelProfile
+    updateCoverImage
 };
